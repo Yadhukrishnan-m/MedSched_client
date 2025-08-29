@@ -7,7 +7,6 @@ import {
   Menu,
   Row,
   Col,
-  message,
 } from "antd";
 import {
   PieChartOutlined,
