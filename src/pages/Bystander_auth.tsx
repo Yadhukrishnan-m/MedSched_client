@@ -14,8 +14,18 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Calendar, Shield, Users } from "lucide-react";
+import bystanderAxiosInstance from "@/config/BystanderAxiosInstance";
+import OtpModal from "@/components/OtpModal";
+import { SuccessToast } from "@/components/shared/Tost";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { addBystanderToken } from "@/redux/slice/bystanderTokenSlice";
 
 export default function ResponsiveAuth() {
+  const navigate=useNavigate()
+    const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loginData, setLoginData] = useState({ email: "", password: "" });
@@ -26,22 +36,55 @@ export default function ResponsiveAuth() {
     confirmPassword: "",
   });
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("Login:", loginData);
-    // Add login logic here
+  const response= await bystanderAxiosInstance.post("/login", {
+      email: loginData.email,password:loginData.password
+    });
+    console.log(response.data.accessToken)
+     dispatch(addBystanderToken(response.data.accessToken));
+   
+   navigate('/bystander-home')
+    
   };
 
-  const handleRegister = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleRegister =async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (registerData.password !== registerData.confirmPassword) {
       alert("Passwords don't match!");
       return;
     }
     console.log("Register:", registerData);
-    // Add registration logic here
+ const otpResponse = await bystanderAxiosInstance.post("/register/send-otp",{email:registerData.email});
+ console.log("✅ OTP generated successfully:", otpResponse.data);
+ setIsOtpModalOpen(true);
+ console.log('modal opened');
+ 
   };
 
+  
+  const onFinalSubmit = async (otp:string) => {
+      await bystanderAxiosInstance.post(
+       "/register/verify-otp",
+       {
+         email: registerData.email,
+         password: registerData.password,
+         name: registerData.name,
+         otp,
+       }
+     );
+setIsOtpModalOpen(false)
+    SuccessToast("successfully registered now login!!");
+   
+    try {
+      console.log();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      // setIsLoading(false);
+    }
+  };
   const handleGoogleLogin = () => {
     console.log("Google login clicked");
     // Add Google OAuth logic here
@@ -403,6 +446,12 @@ export default function ResponsiveAuth() {
           </div>
         </div>
       </div>
+      <OtpModal
+        isOpen={isOtpModalOpen}
+        onClose={() => setIsOtpModalOpen(false)}
+        onFinalSubmit={onFinalSubmit}
+        email={registerData?.email || ""}
+      />
     </div>
   );
 }
