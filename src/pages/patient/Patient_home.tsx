@@ -36,8 +36,49 @@ import {
 
 export default function PatientHome() {
   const [currentTime, setCurrentTime] = useState(new Date());
+  useEffect(() => {
+    const userName = "John"; // replace with dynamic
+    const greeting = `Good morning, ${userName}!`;
+
+    const speakGreeting = () => {
+      const utterance = new SpeechSynthesisUtterance(greeting);
+      utterance.lang = "en-US";
+      utterance.rate = 1;
+      utterance.pitch = 1;
+
+      const voices = speechSynthesis.getVoices();
+      console.log("Available voices:", voices);
+
+      // Pick a female voice if available
+      const  selectedVoice =
+        voices.find((v) => v.name.includes("Female")) ||
+        voices.find((v) => v.name.includes("Samantha")) ||
+        voices.find((v) => v.name.includes("Google UK English Female")) ||
+        voices.find((v) => v.lang === "en-GB") ||
+        voices[0]; // fallback to first
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+
+      speechSynthesis.speak(utterance);
+    };
+
+    // 🔑 Chrome loads voices asynchronously
+    if (speechSynthesis.getVoices().length === 0) {
+      speechSynthesis.onvoiceschanged = speakGreeting;
+    } else {
+      speakGreeting();
+    }
+
+    return () => {
+      speechSynthesis.cancel();
+    };
+  }, []);
+
 
   useEffect(() => {
+    
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
