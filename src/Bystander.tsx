@@ -1,21 +1,31 @@
-import { Suspense,  } from "react";
-import { Route, Routes } from "react-router-dom";
-import Loader from "./components/shared/loader";
-import Bystander_auth from "./pages/Bystander_auth";
+// src/routes/BystanderRoutes.jsx
+import { Routes, Route } from "react-router-dom";
+import Bystander_auth from "./pages/bystander/Bystander_auth";
+import Bystander_home from "./pages/bystander/Bystander_home";
+import IsBystanderLogin from "./protected/IsBystanderLogin";
+import IsBystanderLogout from "./protected/IsBystanderLogout";
 
-// Lazy load components
-
-
-function Admin() {
+function BystanderRoutes() {
   return (
-    <>
-      <Suspense fallback={<Loader message={"loading..."} />}>
-        <Routes>
-          <Route path="/login" element={<Bystander_auth/>}></Route>
-        </Routes>
-      </Suspense>
-    </>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <IsBystanderLogout>
+            <Bystander_auth />
+          </IsBystanderLogout>
+        }
+      />
+      <Route
+        path="/home"
+        element={
+          <IsBystanderLogin>
+            <Bystander_home />
+          </IsBystanderLogin>
+        }
+      />
+    </Routes>
   );
 }
 
-export default Admin;
+export default BystanderRoutes;

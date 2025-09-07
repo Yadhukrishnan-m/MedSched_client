@@ -12,7 +12,7 @@ function IsBystanderLogout({ children }: Props) {
   );
 
   if (bystanderTocken) {
-    return <Navigate to="/bystander-home" />;
+    return <Navigate to="/bystander/home" />;
   }
 
   return <>{children}</>;

@@ -45,7 +45,7 @@ export default function ResponsiveAuth() {
     console.log(response.data.accessToken)
      dispatch(addBystanderToken(response.data.accessToken));
    
-   navigate('/bystander-home')
+   navigate('/bystander/home')
     
   };
 

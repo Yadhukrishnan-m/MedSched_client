@@ -1,10 +1,10 @@
 import "./App.css";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Bystander_auth from "./pages/Bystander_auth";
-import Bystander_home from './pages/Bystander_home'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-import IsBystanderLogin from "./protected/IsBystanderLogin";
-import IsBystanderLogout from "./protected/IsBystanderLogout";
+import BystanderRoutes from "./Bystander";
+import PatientRoutes from "./Patient";
+// import DoctorRoutes from "./routes/DoctorRoutes";
+
 function App() {
   return (
     <>
@@ -12,23 +12,8 @@ function App() {
 
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/bystander"
-            element={
-              <IsBystanderLogout>
-                <Bystander_auth />
-              </IsBystanderLogout>
-            }
-          />
-
-          <Route
-            path="/bystander-home"
-            element={
-              <IsBystanderLogin>
-                <Bystander_home />
-              </IsBystanderLogin>
-            }
-          />
+          <Route path="/bystander/*" element={<BystanderRoutes />} />
+          <Route path="/patient/*" element={<PatientRoutes />} />
         </Routes>
       </BrowserRouter>
     </>
