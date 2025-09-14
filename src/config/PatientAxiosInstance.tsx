@@ -8,7 +8,7 @@ import store from "../redux/store";
 
 // Define an Axios instance
 const patientAxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_SERVER_BYSTANDER_BASEURL,
+  baseURL: import.meta.env.VITE_SERVER_PATIENT_BASEURL,
   withCredentials: true,
 });
 

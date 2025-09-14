@@ -1,142 +1,207 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
-  Calendar,
-  Plus,
-  AlertCircle,
-  History,
-  User,
-  Settings,
-  FileText,
-  Phone,
-  MessageSquare,
-  Clock,
-  BarChart3,
+  ChevronLeft,
+  ChevronRight,
   Home,
-  Menu,
-  X,
-  Bell,
-  Activity,
-} from "lucide-react"
+  Users,
+  Pill,
+  MessageCircle,
+  Calendar,
+  FileText,
+  Settings,
+  Stethoscope,
+  LogOut,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import  patientAxiosInstance  from "../../config/PatientAxiosInstance"; // adjust import path if needed
+import { SuccessToast, ErrorToast } from "../../components/shared/Tost"; // adjust path
+import { useDispatch } from "react-redux";
+import { removePatientToken } from "@/redux/slice/patientTokenSlice";
+import { useNavigate } from "react-router-dom";
 
-interface CollapsibleSidebarProps {
-  className?: string
-}
+const menuItems = [
+  { icon: Home, label: "Dashboard", path: "home", badge: null },
+  { icon: Users, label: "My Patients", path: "patients", badge: "12" },
+  { icon: Pill, label: "Prescriptions", path: "prescriptions", badge: null },
+  {
+    icon: MessageCircle,
+    label: "Consultations",
+    path: "consultations",
+    badge: "3",
+  },
+  { icon: Calendar, label: "Appointments", path: "appointments", badge: null },
+  { icon: FileText, label: "Medical Records", path: "records", badge: null },
+  { icon: Settings, label: "Settings", path: "settings", badge: null },
+];
 
-export default function CollapsibleSidebar({ className }: CollapsibleSidebarProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [activeItem, setActiveItem] = useState("Dashboard")
+export default function CollapsibleSidebar() {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [currentPage, setCurrentPage] = useState("home");
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  const navigationItems = [
-    { icon: Home, label: "Dashboard" },
-    { icon: Calendar, label: "Calendar" },
-    { icon: History, label: "History" },
-    { icon: BarChart3, label: "Reports" },
-    { icon: User, label: "Profile" },
-    { icon: FileText, label: "Prescriptions" },
-    { icon: Phone, label: "Contact Doctor" },
-    { icon: MessageSquare, label: "Support" },
-    { icon: Settings, label: "Settings" },
-  ]
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const quickActions = [
-    { icon: Plus, label: "Add Medicine", color: "bg-blue-500 hover:bg-blue-600" },
-    { icon: Clock, label: "Set Reminder", color: "bg-green-500 hover:bg-green-600" },
-    { icon: AlertCircle, label: "Emergency", color: "bg-red-500 hover:bg-red-600" },
-  ]
+  const handlePageChange = (page: string) => {
+    setCurrentPage(page);
+    console.log(`[v0] Navigating to: ${page}`);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const response = await patientAxiosInstance.post("/logout");
+      if (response.data.success) {
+        SuccessToast("Logged out successfully!");
+        dispatch(removePatientToken());
+        navigate('/patient')
+      } else {
+        ErrorToast("Logout failed. Please try again.");
+      }
+    } catch (err) {
+      ErrorToast("Something went wrong while logging out.");
+      console.log(err)
+    }
+  };
 
   return (
-    <div
-      className={`bg-white border-r border-blue-100 shadow-lg transition-all duration-300 flex flex-col h-screen ${
+    <Card
+      className={cn(
+        "h-full border-r border-blue-100 bg-gradient-to-b from-blue-50 to-white shadow-lg transition-all duration-300",
         isCollapsed ? "w-16" : "w-64"
-      } ${className}`}
+      )}
     >
-      {/* Header */}
-      <div className="p-4 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-white">
-        <div className="flex items-center justify-between">
+      <div className="flex h-full flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-blue-100">
           {!isCollapsed && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-                <Activity className="w-5 h-5 text-white" />
+              <div className="p-2 bg-blue-600 rounded-lg">
+                <Stethoscope className="h-5 w-5 text-white" />
               </div>
-              <h2 className="text-lg font-bold text-blue-900">MediCare</h2>
+              <div>
+                <h2 className="font-semibold text-blue-900">MediCare</h2>
+                <p className="text-xs text-blue-600">Patient Portal</p>
+              </div>
             </div>
           )}
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hover:bg-blue-100 text-blue-600"
+            className="h-8 w-8 p-0 hover:bg-blue-100"
           >
-            {isCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
+            {isCollapsed ? (
+              <ChevronRight className="h-4 w-4 text-blue-600" />
+            ) : (
+              <ChevronLeft className="h-4 w-4 text-blue-600" />
+            )}
           </Button>
         </div>
-      </div>
 
-      {/* Quick Actions */}
-      <div className="p-4 border-b border-blue-100">
-        {!isCollapsed && <h3 className="text-sm font-semibold text-blue-800 mb-3">Quick Actions</h3>}
-        <div className={`${isCollapsed ? "space-y-2" : "grid grid-cols-1 gap-2"}`}>
-          {quickActions.map((action, index) => (
-            <Button
-              key={index}
-              size="sm"
-              className={`${action.color} text-white ${
-                isCollapsed ? "w-8 h-8 p-0" : "w-full justify-start"
-              } transition-all duration-200`}
-              title={isCollapsed ? action.label : undefined}
-            >
-              <action.icon className="w-4 h-4" />
-              {!isCollapsed && <span className="ml-2 text-xs font-medium">{action.label}</span>}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Navigation Menu */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        {!isCollapsed && <h3 className="text-sm font-semibold text-blue-800 mb-3">Navigation</h3>}
-        <div className="space-y-1">
-          {navigationItems.map((item, index) => (
-            <Button
-              key={index}
-              variant="ghost"
-              onClick={() => setActiveItem(item.label)}
-              className={`${isCollapsed ? "w-8 h-8 p-0" : "w-full justify-start"} ${
-                activeItem === item.label
-                  ? "bg-blue-100 text-blue-700 border-l-4 border-blue-500"
-                  : "hover:bg-blue-50 text-blue-600"
-              } transition-all duration-200`}
-              title={isCollapsed ? item.label : undefined}
-            >
-              <item.icon className="w-4 h-4" />
-              {!isCollapsed && <span className="ml-3 text-sm font-medium">{item.label}</span>}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      {/* Footer Progress */}
-      {!isCollapsed && (
-        <div className="p-4 border-t border-blue-100 bg-gradient-to-r from-blue-50 to-white">
-          <div className="bg-white rounded-lg p-3 border border-blue-100 shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs font-medium text-blue-600">Today's Progress</p>
-              <Bell className="w-4 h-4 text-blue-500" />
+        {/* Patient Info */}
+        {!isCollapsed && (
+          <div className="p-4 border-b border-blue-100">
+            <div className="flex items-center space-x-3">
+              <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center">
+                <span className="text-white font-medium">DR</span>
+              </div>
+              <div>
+                <p className="font-medium text-blue-900">Dr. Sarah Johnson</p>
+                <p className="text-sm text-blue-600">Cardiologist</p>
+              </div>
             </div>
-            <p className="text-sm font-bold text-blue-800 mb-2">18/21 medicines taken</p>
-            <div className="w-full bg-blue-100 rounded-full h-2">
-              <div
-                className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
-                style={{ width: "85%" }}
-              ></div>
-            </div>
-            <p className="text-xs text-blue-500 mt-1">85% completed</p>
           </div>
+        )}
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 p-2 space-y-1">
+          {menuItems.map((item) => (
+            <Button
+              key={item.path}
+              variant="ghost"
+              className={cn(
+                "w-full justify-start h-10 hover:bg-blue-100 hover:text-blue-700",
+                isCollapsed ? "px-2" : "px-3",
+                currentPage === item.path && "bg-blue-100 text-blue-700"
+              )}
+              onClick={() => handlePageChange(item.path)}
+            >
+              <item.icon
+                className={cn("h-4 w-4 text-blue-600", !isCollapsed && "mr-3")}
+              />
+              {!isCollapsed && (
+                <>
+                  <span className="text-blue-800">{item.label}</span>
+                  {item.badge && (
+                    <Badge
+                      variant="secondary"
+                      className="ml-auto bg-blue-100 text-blue-700 hover:bg-blue-200"
+                    >
+                      {item.badge}
+                    </Badge>
+                  )}
+                </>
+              )}
+            </Button>
+          ))}
+        </nav>
+
+        {/* Footer with Logout */}
+        <div className="p-4 border-t border-blue-100 space-y-3">
+          {/* Status */}
+          {!isCollapsed ? (
+            <div className="text-center">
+              <p className="text-xs text-blue-600">Online Status</p>
+              <div className="flex items-center justify-center mt-1">
+                <div className="h-2 w-2 bg-green-500 rounded-full mr-2"></div>
+                <span className="text-sm text-blue-800">Available</span>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+            </div>
+          )}
+
+          {/* Logout Button */}
+          <Button
+            variant="ghost"
+            className="w-full justify-start h-10 hover:bg-red-100 text-red-600"
+            onClick={() => setShowLogoutConfirm(true)}
+          >
+            <LogOut className={cn("h-4 w-4", !isCollapsed && "mr-3")} />
+            {!isCollapsed && <span>Logout</span>}
+          </Button>
+
+          {/* Confirmation */}
+          {showLogoutConfirm && (
+            <div className="mt-2 p-2 border rounded-md bg-red-50 text-center">
+              <p className="text-sm text-red-700">Confirm logout?</p>
+              <div className="flex justify-center mt-2 space-x-2">
+                <Button
+                  size="sm"
+                  className="bg-red-600 text-white hover:bg-red-700"
+                  onClick={handleLogout}
+                >
+                  Yes
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  No
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
-  )
+      </div>
+    </Card>
+  );
 }

@@ -11,15 +11,18 @@ function PatientRoutes() {
       <Route
         path="/"
         element={
-        
+          <IsPatientLogout>
+            {" "}
             <Patient_auth />
-          
+          </IsPatientLogout>
         }
       />
       <Route
         path="/*"
         element={
+          <IsPatientLogin>
             <PatientPages />
+          </IsPatientLogin>
         }
       />
     </Routes>
