@@ -1,7 +1,7 @@
 // src/routes/BystanderRoutes.jsx
 import { Routes, Route } from "react-router-dom";
 import Bystander_auth from "./pages/bystander/Bystander_auth";
-import Bystander_home from "./pages/bystander/Bystander_home";
+import Bystander_pages from "./pages/bystander/Bystander_pages";
 import IsBystanderLogin from "./protected/IsBystanderLogin";
 import IsBystanderLogout from "./protected/IsBystanderLogout";
 
@@ -17,11 +17,13 @@ function BystanderRoutes() {
         }
       />
       <Route
-        path="/home"
+        path="/*"
         element={
-          <IsBystanderLogin>
-            <Bystander_home />
-          </IsBystanderLogin>
+          <>
+            <IsBystanderLogin>
+              <Bystander_pages />
+            </IsBystanderLogin>
+          </>
         }
       />
     </Routes>

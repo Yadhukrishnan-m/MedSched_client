@@ -1,3 +1,5 @@
+
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,16 +14,16 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Calendar, Shield, Users } from "lucide-react";
-import bystanderAxiosInstance from "@/config/BystanderAxiosInstance";
+import doctorAxiosInstance from "@/config/DoctorAxiosInstance";
 import OtpModal from "@/components/OtpModal";
 import { ErrorToast, SuccessToast } from "@/components/shared/Tost";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { addBystanderToken } from "@/redux/slice/bystanderTokenSlice";
+import { addDoctorToken } from "@/redux/slice/doctorTokenSlice";
 
 export default function ResponsiveAuth() {
-  const navigate = useNavigate();
-  const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
+  const navigate=useNavigate()
+    const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   // const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
@@ -34,66 +36,67 @@ export default function ResponsiveAuth() {
     confirmPassword: "",
   });
 
-  
-
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log("Login:", loginData);
-    try {
-        const response = await bystanderAxiosInstance.post("/login", {
-          email: loginData.email,
-          password: loginData.password,
-        });
-        console.log(response.data.accessToken);
-        dispatch(addBystanderToken(response.data.accessToken));
+   try {
+     e.preventDefault();
+     console.log("Login:", loginData);
+     const response = await doctorAxiosInstance.post("/login", {
+       email: loginData.email,
+       password: loginData.password,
+     });
+     console.log(response.data.accessToken);
+     dispatch(addDoctorToken(response.data.accessToken));
 
-        navigate("/bystander/home");
-    } catch (err) {
-        if (err instanceof Error) {
-                 ErrorToast("invalid credentials"); 
-               } else {
-                 ErrorToast(String(err)); 
-               }
+     navigate("/doctor/home");
+    
+   } catch (err) {
+    if (err instanceof Error) {
+      ErrorToast("invalid credentials");
+    } else {
+      ErrorToast(String(err));
     }
+   }
+    
+  };
+
+  const handleRegister =async (e: React.FormEvent<HTMLFormElement>) => {
+ try {
+     e.preventDefault();
+     if (registerData.password !== registerData.confirmPassword) {
+       alert("Passwords don't match!");
+       return;
+     }
+     console.log("Register:", registerData);
+     const otpResponse = await doctorAxiosInstance.post("/register/send-otp", {
+       email: registerData.email,
+     });
+     console.log("✅ OTP generated successfully:", otpResponse.data);
+     setIsOtpModalOpen(true);
+     console.log("modal opened");
+ 
+ } catch (err) {
+    if (err instanceof Error) {
+      ErrorToast("email alredy exist");
+    } else {
+      ErrorToast(String(err));
+    }
+ }
+  };
+
   
-  };
-
-  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
-    try {
-       e.preventDefault();
-       if (registerData.password !== registerData.confirmPassword) {
-         alert("Passwords don't match!");
-         return;
+  const onFinalSubmit = async (otp:string) => {
+      await doctorAxiosInstance.post(
+       "/register/verify-otp",
+       {
+         email: registerData.email,
+         password: registerData.password,
+         name: registerData.name,
+         otp,
        }
-       console.log("Register:", registerData);
-       const otpResponse = await bystanderAxiosInstance.post(
-         "/register/send-otp",
-         { email: registerData.email }
-       );
-       console.log("✅ OTP generated successfully:", otpResponse.data);
-       setIsOtpModalOpen(true);
-       console.log("modal opened");
-      
-    } catch (err) {
-               if (err instanceof Error) {
-                 ErrorToast("email alredy exist"); 
-               } else {
-                 ErrorToast(String(err)); 
-               }
-    }
-   
-  };
-
-  const onFinalSubmit = async (otp: string) => {
-    await bystanderAxiosInstance.post("/register/verify-otp", {
-      email: registerData.email,
-      password: registerData.password,
-      name: registerData.name,
-      otp,
-    });
-    setIsOtpModalOpen(false);
+     );
+setIsOtpModalOpen(false)
     SuccessToast("successfully registered now login!!");
-
+   
     try {
       console.log();
     } catch (error) {
